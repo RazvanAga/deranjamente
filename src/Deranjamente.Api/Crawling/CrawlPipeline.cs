@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Deranjamente.Api.Data;
 using Deranjamente.Api.Domain;
+using Deranjamente.Api.Geo;
 using Microsoft.EntityFrameworkCore;
 
 namespace Deranjamente.Api.Crawling;
@@ -11,7 +12,7 @@ namespace Deranjamente.Api.Crawling;
 /// a source going silent), and writes a <see cref="CrawlRun"/> audit row. A crawler throwing
 /// is caught and recorded — it never propagates, so one bad source can't stop the others.
 /// </summary>
-public class CrawlPipeline(AppDbContext db, TimeProvider clock, ILogger<CrawlPipeline> logger)
+public class CrawlPipeline(AppDbContext db, TimeProvider clock, GeoResolver geo, ILogger<CrawlPipeline> logger)
 {
     public async Task<CrawlRun> RunAsync(ICrawler crawler, CrawlerSource source, CancellationToken ct = default)
     {
@@ -73,12 +74,17 @@ public class CrawlPipeline(AppDbContext db, TimeProvider clock, ILogger<CrawlPip
             }
             else
             {
+                // județ comes from config; only the localitate is resolved within it.
+                var geoMatch = await geo.ResolveAsync(source.Judet, row.Localitate, ct);
+
                 db.Outages.Add(new Outage
                 {
                     Provider = source.DisplayName,
                     Type = source.Type,
                     Judet = source.Judet,
                     Localitate = row.Localitate,
+                    SirutaCode = geoMatch.SirutaCode,
+                    GeoUnresolved = !geoMatch.Resolved,
                     AffectedArea = row.AffectedArea,
                     StartsAt = row.StartsAt,
                     EndsAt = row.EndsAt,

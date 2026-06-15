@@ -1,0 +1,45 @@
+# Romania județe — 41 counties + municipiul București. Code = standard 2-letter mnemonic
+# (also the choropleth GeoJSON key). Covered = a crawler currently feeds this județ.
+# Code,Name,Covered
+AB,Alba,false
+AR,Arad,false
+AG,Argeș,false
+BC,Bacău,false
+BH,Bihor,false
+BN,Bistrița-Năsăud,false
+BT,Botoșani,false
+BV,Brașov,false
+BR,Brăila,false
+B,București,false
+BZ,Buzău,false
+CS,Caraș-Severin,false
+CL,Călărași,false
+CJ,Cluj,false
+CT,Constanța,false
+CV,Covasna,false
+DB,Dâmbovița,false
+DJ,Dolj,false
+GL,Galați,false
+GR,Giurgiu,false
+GJ,Gorj,false
+HR,Harghita,false
+HD,Hunedoara,false
+IL,Ialomița,false
+IS,Iași,false
+IF,Ilfov,false
+MM,Maramureș,false
+MH,Mehedinți,false
+MS,Mureș,false
+NT,Neamț,false
+OT,Olt,false
+PH,Prahova,false
+SM,Satu Mare,false
+SJ,Sălaj,false
+SB,Sibiu,false
+SV,Suceava,false
+TR,Teleorman,false
+TM,Timiș,true
+TL,Tulcea,false
+VS,Vaslui,false
+VL,Vâlcea,false
+VN,Vrancea,false

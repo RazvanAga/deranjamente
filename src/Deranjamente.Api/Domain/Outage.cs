@@ -39,8 +39,15 @@ public class Outage
     /// <summary>Localitate — resolved within the known județ, raw text kept on fallback.</summary>
     public required string Localitate { get; set; }
 
-    /// <summary>Canonical SIRUTA code; nullable until geo resolution is wired up (slice &gt;1).</summary>
+    /// <summary>Canonical SIRUTA code; null when the localitate could not be resolved.</summary>
     public string? SirutaCode { get; set; }
+
+    /// <summary>
+    /// True when the GeoResolver could not confidently match the localitate to the SIRUTA set
+    /// for this județ (raw text kept, flagged for admin review). The outage still appears under
+    /// the correct județ — only the precise localitate link is missing.
+    /// </summary>
+    public bool GeoUnresolved { get; set; }
 
     /// <summary>Affected streets/zone kept as raw text — no per-provider address parsing in v1.</summary>
     public required string AffectedArea { get; set; }

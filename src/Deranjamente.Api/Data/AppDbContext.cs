@@ -8,6 +8,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Outage> Outages => Set<Outage>();
     public DbSet<CrawlerSource> CrawlerSources => Set<CrawlerSource>();
     public DbSet<CrawlRun> CrawlRuns => Set<CrawlRun>();
+    public DbSet<Judet> Judete => Set<Judet>();
+    public DbSet<Localitate> Localitati => Set<Localitate>();
+    public DbSet<LocalitateAlias> LocalitateAliases => Set<LocalitateAlias>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,5 +46,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         run.Property(r => r.Provider).HasMaxLength(200);
         run.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
         run.HasIndex(r => new { r.CrawlerKey, r.StartedAt });
+
+        var judet = modelBuilder.Entity<Judet>();
+        judet.Property(j => j.Code).HasMaxLength(4);
+        judet.Property(j => j.Name).HasMaxLength(100);
+        judet.Property(j => j.SirutaCode).HasMaxLength(20);
+        judet.HasIndex(j => j.Code).IsUnique();
+        judet.HasIndex(j => j.Name).IsUnique();
+
+        var loc = modelBuilder.Entity<Localitate>();
+        loc.Property(l => l.SirutaCode).HasMaxLength(20);
+        loc.Property(l => l.Name).HasMaxLength(200);
+        loc.Property(l => l.NormalizedName).HasMaxLength(200);
+        loc.Property(l => l.JudetCode).HasMaxLength(4);
+        loc.HasIndex(l => l.SirutaCode).IsUnique();
+        // Resolver loads the closed set per județ, then matches on the folded name.
+        loc.HasIndex(l => new { l.JudetCode, l.NormalizedName });
+
+        var alias = modelBuilder.Entity<LocalitateAlias>();
+        alias.Property(a => a.JudetCode).HasMaxLength(4);
+        alias.Property(a => a.NormalizedAlias).HasMaxLength(200);
+        alias.Property(a => a.SirutaCode).HasMaxLength(20);
+        alias.HasIndex(a => new { a.JudetCode, a.NormalizedAlias }).IsUnique();
     }
 }

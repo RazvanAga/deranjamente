@@ -1,0 +1,55 @@
+# Timiș localities (commune/town reporting granularity) — the MVP-covered județ.
+# This is a hand-curated SUBSET. SIRUTA codes are provisional placeholders except where
+# verified (Timișoara = 155252); reconcile against the official SIRUTA registry when the full
+# national dataset is imported (flagged follow-up). The GeoResolver and its tests do not depend
+# on the exact code values, only on stable per-locality codes.
+# SirutaCode,Name
+155252,Timișoara
+156018,Lugoj
+156400,Buziaș
+156500,Ciacova
+156600,Deta
+156700,Făget
+156800,Gătaia
+156900,Jimbolia
+157000,Recaș
+157100,Sânnicolau Mare
+157200,Becicherecu Mic
+157300,Biled
+157400,Cărpiniș
+157500,Cenad
+157600,Cenei
+157700,Checea
+157800,Comloșu Mare
+157900,Costeiu
+158000,Denta
+158100,Dudeștii Noi
+158200,Dudeștii Vechi
+158300,Dumbrăvița
+158400,Fibiș
+158500,Foeni
+158600,Ghiroda
+158700,Giarmata
+158800,Giroc
+158900,Giulvăz
+159000,Jebel
+159100,Lenauheim
+159200,Liebling
+159300,Lovrin
+159400,Moravița
+159500,Moșnița Nouă
+159600,Orțișoara
+159700,Peciu Nou
+159800,Periam
+159900,Pișchia
+160000,Sacoșu Turcesc
+160100,Sânandrei
+160200,Sânmihaiu Român
+160300,Satchinez
+160400,Șag
+160500,Șandra
+160600,Tomești
+160700,Traian Vuia
+160800,Uivar
+160900,Variaș
+161000,Voiteg

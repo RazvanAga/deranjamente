@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Canonical SIRUTA seed data, read at startup via the assembly manifest. -->
+    <EmbeddedResource Include="Data\siruta\judete.csv" />
+    <EmbeddedResource Include="Data\siruta\localitati-timis.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
     <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />

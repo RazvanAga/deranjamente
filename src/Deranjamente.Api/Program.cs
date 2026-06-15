@@ -24,6 +24,7 @@ builder.Services.AddCors(options => options.AddPolicy(WebCors, p =>
 
 // Crawl pipeline spine.
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<Deranjamente.Api.Geo.GeoResolver>();
 builder.Services.AddScoped<CrawlPipeline>();
 builder.Services.AddScoped<CrawlJob>();
 builder.Services.AddScoped<ICrawler, SampleCrawler>();
@@ -68,12 +69,14 @@ if (app.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
     await SeedData.EnsureOutageSeededAsync(db);
 }
 
-// Crawler registry config is seeded whenever the scheduler runs or migrations were applied.
+// Crawler registry config + canonical geography are seeded whenever the scheduler runs or
+// migrations were applied (the GeoResolver needs the SIRUTA tables populated before any crawl).
 if (schedulerEnabled || app.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await SeedData.EnsureCrawlerSourcesSeededAsync(db);
+    await SirutaSeeder.EnsureGeoSeededAsync(db);
 }
 
 if (schedulerEnabled)

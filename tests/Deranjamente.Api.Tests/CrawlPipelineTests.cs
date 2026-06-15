@@ -1,6 +1,7 @@
 using Deranjamente.Api.Crawling;
 using Deranjamente.Api.Data;
 using Deranjamente.Api.Domain;
+using Deranjamente.Api.Geo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Testcontainers.PostgreSql;
@@ -47,7 +48,7 @@ public class CrawlPipelineTests(PostgresFixture fixture) : IClassFixture<Postgre
     {
         _clock.Now = now;
         await using var ctx = fixture.NewContext();
-        var pipeline = new CrawlPipeline(ctx, _clock, NullLogger<CrawlPipeline>.Instance);
+        var pipeline = new CrawlPipeline(ctx, _clock, new GeoResolver(ctx), NullLogger<CrawlPipeline>.Instance);
         return await pipeline.RunAsync(new FakeCrawler(source.Key, rows), source);
     }
 
