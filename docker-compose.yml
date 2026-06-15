@@ -1,0 +1,46 @@
+# Local dev stack: PostgreSQL + API + web, brought up with `docker compose up`.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: deranjamente
+      POSTGRES_PASSWORD: deranjamente
+      POSTGRES_DB: deranjamente
+    ports:
+      # Host 5433 → container 5432 to avoid clashing with a local Postgres on 5432.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deranjamente"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./src/Deranjamente.Api
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=deranjamente;Username=deranjamente;Password=deranjamente"
+      # Apply EF migrations + seed on boot for the local demo only (prod uses a migration bundle).
+      APPLY_MIGRATIONS: "true"
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "5123:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./src/web
+    environment:
+      # Server-side fetches inside the web container reach the api by its service name.
+      API_BASE_URL: "http://api:8080"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

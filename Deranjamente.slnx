@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Deranjamente.Api/Deranjamente.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Deranjamente.Api.Tests/Deranjamente.Api.Tests.csproj" />
+  </Folder>
+</Solution>
