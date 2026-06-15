@@ -66,5 +66,25 @@ public static class SeedData
 
             await db.SaveChangesAsync();
         }
+
+        if (!await db.CrawlerSources.AnyAsync(s => s.Key == "aquatim"))
+        {
+            db.CrawlerSources.Add(new CrawlerSource
+            {
+                Key = "aquatim",
+                // Human listing page; also used as each outage's SourceUrl. The crawler derives
+                // the per-date XHR endpoint from this base.
+                Url = "https://www.aquatim.ro/intreruperi",
+                DisplayName = "Aquatim",
+                Judet = "Timiș",
+                Type = UtilityType.Apa,
+                Enabled = true,
+                CadenceMinutes = 60,
+                LookaheadDays = 30,
+                Attribution = "Sursă: Aquatim S.A. (aquatim.ro)",
+            });
+
+            await db.SaveChangesAsync();
+        }
     }
 }

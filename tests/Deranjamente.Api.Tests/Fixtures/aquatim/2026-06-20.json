@@ -1,0 +1,29 @@
+{
+  "data": "2026-06-20",
+  "intreruperi": [
+    {
+      "tip": "intervenție programată",
+      "localitate": "Timișoara",
+      "zona": "Zona Mehala, Str. Gării nr. 1-20",
+      "ora_inceput": "2026-06-20T08:00:00",
+      "ora_sfarsit": "2026-06-20T16:00:00",
+      "detalii": "Lucrări de reabilitare conductă apă potabilă."
+    },
+    {
+      "tip": "avarie",
+      "localitate": "Giroc",
+      "zona": "Str. Trandafirilor",
+      "ora_inceput": "2026-06-20T09:30:00",
+      "ora_sfarsit": null,
+      "detalii": "Avarie la rețeaua de distribuție."
+    },
+    {
+      "tip": "avarie",
+      "localitate": "   ",
+      "zona": "necunoscut",
+      "ora_inceput": "2026-06-20T10:00:00",
+      "ora_sfarsit": null,
+      "detalii": "Intrare fără localitate — trebuie ignorată."
+    }
+  ]
+}

@@ -27,6 +27,14 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<CrawlPipeline>();
 builder.Services.AddScoped<CrawlJob>();
 builder.Services.AddScoped<ICrawler, SampleCrawler>();
+builder.Services.AddScoped<ICrawler, AquatimCrawler>();
+
+// All crawlers fetch through one browser-UA client (some sources 403 non-browser UAs).
+builder.Services.AddHttpClient(CrawlHttp.ClientName, c =>
+{
+    c.DefaultRequestHeaders.UserAgent.ParseAdd(CrawlHttp.UserAgent);
+    c.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // Hangfire scheduling (Postgres-backed). Disabled in tests via ENABLE_SCHEDULER=false so the
 // sample crawler doesn't run against the test host.
@@ -79,10 +87,11 @@ if (schedulerEnabled)
 
     await CrawlScheduler.RegisterAsync(app.Services);
 
-    // Kick one immediate run so the stack is demoable without waiting for the cadence.
+    // Kick one immediate run per source so the stack is demoable without waiting for the cadence.
     using var scope = app.Services.CreateScope();
     var jobs = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
     jobs.Enqueue<CrawlJob>(job => job.RunAsync("sample"));
+    jobs.Enqueue<CrawlJob>(job => job.RunAsync(AquatimCrawler.CrawlerKey));
 }
 
 app.MapGet("/api/outages", async (string? judet, AppDbContext db) =>

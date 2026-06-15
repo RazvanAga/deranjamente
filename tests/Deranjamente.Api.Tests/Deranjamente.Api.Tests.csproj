@@ -24,4 +24,9 @@
     <ProjectReference Include="..\..\src\Deranjamente.Api\Deranjamente.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Golden crawler fixtures (saved JSON/HTML/PDF) — tests parse these offline, never live sites. -->
+    <Content Include="Fixtures\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
