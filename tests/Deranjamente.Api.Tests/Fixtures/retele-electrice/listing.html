@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ro">
+<head><meta charset="utf-8"><title>Întreruperi programate</title></head>
+<body>
+  <main>
+    <h1>Întreruperi programate</h1>
+    <div class="accordion">
+      <section>
+        <h3>Săptămâna curentă</h3>
+        <!-- Presigned S3 link: the query signature changes every request; identity is the filename. -->
+        <a href="https://re-bucket.s3.eu-central-1.amazonaws.com/intreruperi/Intreruperi_programate_16-22_iunie_2026.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Expires=3600&amp;X-Amz-Signature=aaa111">Întreruperi programate în perioada 16 - 22 iunie 2026</a>
+        <!-- Same PDF, a second (differently-signed) link — must dedupe to one document. -->
+        <a href="https://re-bucket.s3.eu-central-1.amazonaws.com/intreruperi/Intreruperi_programate_16-22_iunie_2026.pdf?X-Amz-Signature=bbb222">descarcă din nou</a>
+      </section>
+      <section>
+        <h3>Săptămâna viitoare</h3>
+        <!-- Relative href, resolved against the listing URL. -->
+        <a href="/documente/Intreruperi_programate_23-29_iunie_2026.pdf?sig=zzz">Întreruperi programate 23.06.2026 - 29.06.2026</a>
+      </section>
+    </div>
+    <footer>
+      <a href="https://www.reteleelectrice.ro/contact">Contact</a>
+      <a href="/despre">Despre noi</a>
+    </footer>
+  </main>
+</body>
+</html>

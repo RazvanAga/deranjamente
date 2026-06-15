@@ -29,12 +29,21 @@ builder.Services.AddScoped<CrawlPipeline>();
 builder.Services.AddScoped<CrawlJob>();
 builder.Services.AddScoped<ICrawler, SampleCrawler>();
 builder.Services.AddScoped<ICrawler, AquatimCrawler>();
+builder.Services.AddScoped<ICrawler, Deranjamente.Api.Crawling.ReteleElectrice.ReteleElectriceCrawler>();
+
+// Document-source infrastructure: coordinate-aware PDF extraction + archive-once-by-hash.
+builder.Services.AddSingleton<Deranjamente.Api.Crawling.Pdf.IPdfWordExtractor,
+    Deranjamente.Api.Crawling.Pdf.PdfPigWordExtractor>();
+var archivePath = builder.Configuration["Archive:Path"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "archive");
+builder.Services.AddSingleton<Deranjamente.Api.Crawling.Documents.IDocumentArchive>(
+    new Deranjamente.Api.Crawling.Documents.FileSystemDocumentArchive(archivePath));
 
 // All crawlers fetch through one browser-UA client (some sources 403 non-browser UAs).
 builder.Services.AddHttpClient(CrawlHttp.ClientName, c =>
 {
     c.DefaultRequestHeaders.UserAgent.ParseAdd(CrawlHttp.UserAgent);
-    c.Timeout = TimeSpan.FromSeconds(30);
+    c.Timeout = TimeSpan.FromSeconds(60); // weekly national PDFs can be a few MB
 });
 
 // Hangfire scheduling (Postgres-backed). Disabled in tests via ENABLE_SCHEDULER=false so the
@@ -95,6 +104,8 @@ if (schedulerEnabled)
     var jobs = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
     jobs.Enqueue<CrawlJob>(job => job.RunAsync("sample"));
     jobs.Enqueue<CrawlJob>(job => job.RunAsync(AquatimCrawler.CrawlerKey));
+    jobs.Enqueue<CrawlJob>(job => job.RunAsync(
+        Deranjamente.Api.Crawling.ReteleElectrice.ReteleElectriceCrawler.CrawlerKey));
 }
 
 app.MapGet("/api/outages", async (string? judet, AppDbContext db) =>

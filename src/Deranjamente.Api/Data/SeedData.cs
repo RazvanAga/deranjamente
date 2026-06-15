@@ -67,6 +67,24 @@ public static class SeedData
             await db.SaveChangesAsync();
         }
 
+        if (!await db.CrawlerSources.AnyAsync(s => s.Key == "retele-electrice"))
+        {
+            db.CrawlerSources.Add(new CrawlerSource
+            {
+                Key = "retele-electrice",
+                Url = "https://www.reteleelectrice.ro/intreruperi/programate/",
+                DisplayName = "Rețele Electrice",
+                Judet = "Timiș",
+                Type = UtilityType.Curent,
+                Enabled = true,
+                CadenceMinutes = 360, // weekly PDFs change slowly; re-check a few times a day
+                LookaheadDays = 14,    // listing covers current + next week(s)
+                Attribution = "Sursă: Rețele Electrice România (reteleelectrice.ro)",
+            });
+
+            await db.SaveChangesAsync();
+        }
+
         if (!await db.CrawlerSources.AnyAsync(s => s.Key == "aquatim"))
         {
             db.CrawlerSources.Add(new CrawlerSource

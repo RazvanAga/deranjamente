@@ -9,6 +9,9 @@ node_modules/
 out/
 npm-debug.log*
 
+# Crawler document archive (PDFs archived at runtime, keyed by content hash)
+archive/
+
 # Env / secrets
 .env
 *.env.local

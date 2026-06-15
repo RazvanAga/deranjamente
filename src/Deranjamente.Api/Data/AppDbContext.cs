@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Judet> Judete => Set<Judet>();
     public DbSet<Localitate> Localitati => Set<Localitate>();
     public DbSet<LocalitateAlias> LocalitateAliases => Set<LocalitateAlias>();
+    public DbSet<CrawledDocument> CrawledDocuments => Set<CrawledDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,5 +69,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         alias.Property(a => a.NormalizedAlias).HasMaxLength(200);
         alias.Property(a => a.SirutaCode).HasMaxLength(20);
         alias.HasIndex(a => new { a.JudetCode, a.NormalizedAlias }).IsUnique();
+
+        var doc = modelBuilder.Entity<CrawledDocument>();
+        doc.Property(d => d.CrawlerKey).HasMaxLength(100);
+        doc.Property(d => d.DocumentKey).HasMaxLength(300);
+        doc.Property(d => d.Title).HasMaxLength(500);
+        doc.Property(d => d.ContentHash).HasMaxLength(64);
+        doc.Property(d => d.ArchivePath).HasMaxLength(1000);
+        doc.Property(d => d.Status).HasConversion<string>().HasMaxLength(20);
+        // Ledger is looked up by (crawler, stable document key); identity is never the URL.
+        doc.HasIndex(d => new { d.CrawlerKey, d.DocumentKey }).IsUnique();
     }
 }
