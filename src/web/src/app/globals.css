@@ -1,13 +1,32 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f4;
+  --fg: #15212b;
+  --muted: #5b6b78;
+  --border: #dce2e8;
+  --accent: #2563eb;
+  --danger: #b91c1c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0c1116;
+    --surface: #151c23;
+    --surface-2: #1d262f;
+    --fg: #e7edf2;
+    --muted: #9aa8b4;
+    --border: #2a343d;
+    --accent: #5b9bff;
+    --danger: #f87171;
+    color-scheme: dark;
   }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 html {
@@ -24,26 +43,15 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+  line-height: 1.5;
 }
 
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

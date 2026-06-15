@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# choropleth: large raw source geometry (re-downloaded by scripts/build-geo.mjs;
+# only the generated src/app/_data/judete-*.json are committed)
+/scripts/ro-counties.source.geojson

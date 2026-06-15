@@ -5,10 +5,12 @@ using Deranjamente.Api.Infrastructure;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddMemoryCache();
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
@@ -108,13 +110,21 @@ if (schedulerEnabled)
         Deranjamente.Api.Crawling.ReteleElectrice.ReteleElectriceCrawler.CrawlerKey));
 }
 
-app.MapGet("/api/outages", async (string? judet, AppDbContext db) =>
+app.MapGet("/api/outages", async (string? judet, bool? active, AppDbContext db, TimeProvider clock) =>
 {
     var query = db.Outages.AsNoTracking().Where(o => o.IsVisible);
 
     if (!string.IsNullOrWhiteSpace(judet))
     {
         query = query.Where(o => o.Judet == judet);
+    }
+
+    // "Active" (PRD): the window has not ended — ongoing + upcoming. Open-ended avarii
+    // (null EndsAt) count as active. Past outages are kept for history but excluded here.
+    if (active == true)
+    {
+        var now = clock.GetUtcNow();
+        query = query.Where(o => o.EndsAt == null || o.EndsAt >= now);
     }
 
     var outages = await query
@@ -125,6 +135,65 @@ app.MapGet("/api/outages", async (string? judet, AppDbContext db) =>
         .ToListAsync();
 
     return Results.Ok(outages);
+});
+
+// Per-județ severity: active-outage counts derived on read (no maintained counter), grouped
+// by județ + type, joined onto the canonical județe so the map gets coverage + counts in one
+// call. Cached briefly so the homepage choropleth can poll cheaply without re-running the
+// GROUP BY on every request.
+app.MapGet("/api/severity", async (string? type, AppDbContext db, IMemoryCache cache, TimeProvider clock) =>
+{
+    UtilityType? typeFilter = null;
+    if (!string.IsNullOrWhiteSpace(type))
+    {
+        if (!Enum.TryParse<UtilityType>(type, ignoreCase: true, out var parsed))
+        {
+            return Results.BadRequest($"Unknown type '{type}'.");
+        }
+        typeFilter = parsed;
+    }
+
+    var cacheKey = $"severity:{typeFilter?.ToString() ?? "all"}";
+    var response = await cache.GetOrCreateAsync(cacheKey, async entry =>
+    {
+        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+
+        var now = clock.GetUtcNow();
+        var active = db.Outages.AsNoTracking()
+            .Where(o => o.IsVisible && (o.EndsAt == null || o.EndsAt >= now));
+        if (typeFilter is not null)
+        {
+            active = active.Where(o => o.Type == typeFilter);
+        }
+
+        var grouped = await active
+            .GroupBy(o => new { o.Judet, o.Type })
+            .Select(g => new { g.Key.Judet, g.Key.Type, Count = g.Count() })
+            .ToListAsync();
+
+        var byJudet = grouped
+            .GroupBy(g => g.Judet, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+
+        var judete = await db.Judete.AsNoTracking()
+            .OrderBy(j => j.Name)
+            .Select(j => new { j.Code, j.Name, j.IsCovered })
+            .ToListAsync();
+
+        var counties = judete.Select(j =>
+        {
+            byJudet.TryGetValue(j.Name, out var rows);
+            int Count(UtilityType t) => rows?.Where(r => r.Type == t).Sum(r => r.Count) ?? 0;
+            var curent = Count(UtilityType.Curent);
+            var apa = Count(UtilityType.Apa);
+            return new CountySeverity(j.Code, j.Name, j.IsCovered,
+                new CountyCounts(curent, apa, curent + apa));
+        }).ToList();
+
+        return new SeverityResponse(now, counties);
+    });
+
+    return Results.Ok(response);
 });
 
 app.Run();
@@ -142,6 +211,15 @@ record OutageDto(
     bool IsPlanned,
     OutageSource Source,
     string SourceUrl);
+
+/// <summary>Per-județ active-outage severity for the choropleth (derived on read, cached).</summary>
+record SeverityResponse(DateTimeOffset GeneratedAt, IReadOnlyList<CountySeverity> Counties);
+
+/// <summary>One județ's coverage flag + active counts; <c>Code</c> keys the map GeoJSON.</summary>
+record CountySeverity(string Code, string Name, bool Covered, CountyCounts Counts);
+
+/// <summary>Active-outage counts for a județ, split by utility type (v1: curent + apă).</summary>
+record CountyCounts(int Curent, int Apa, int Total);
 
 // Exposed so WebApplicationFactory can target this assembly in integration tests.
 public partial class Program;
