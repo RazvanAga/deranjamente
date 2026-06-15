@@ -23,6 +23,8 @@ public class OutagesEndpointTests : IAsyncLifetime
         {
             builder.UseSetting("ConnectionStrings:Default", _db.GetConnectionString());
             builder.UseSetting("APPLY_MIGRATIONS", "true");
+            // Keep Hangfire/sample crawler out of the endpoint test so the seeded row is the only one.
+            builder.UseSetting("ENABLE_SCHEDULER", "false");
         });
     }
 

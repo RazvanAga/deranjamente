@@ -63,6 +63,13 @@ public class Outage
     /// <summary>Original scraped text, retained for traceability and re-normalization.</summary>
     public required string RawText { get; set; }
 
+    /// <summary>
+    /// Dedup identity: hash of provider + localitate + startsAt + affectedArea
+    /// (endsAt deliberately excluded so extending a window updates, not duplicates).
+    /// Set by the pipeline, not by crawlers.
+    /// </summary>
+    public string ContentHash { get; set; } = "";
+
     public DateTimeOffset FirstSeenAt { get; set; }
     public DateTimeOffset LastSeenAt { get; set; }
 

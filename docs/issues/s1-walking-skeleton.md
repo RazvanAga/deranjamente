@@ -11,13 +11,13 @@ Define the `Outage` entity and its first EF Core migration, expose a single read
 `Outage` fields (per PRD): provider, type, judet, localitate, sirutaCode (nullable for now), affectedArea (raw text), startsAt, endsAt (nullable), isPlanned, source (scraped|manual), isVisible, sourceUrl, rawText, firstSeenAt, lastSeenAt, disappearedAt.
 
 ## Acceptance criteria
-- [ ] .NET solution (ASP.NET Core API) and Next.js + TS app scaffolded; all dependencies installed and building (NuGet restore + npm install)
-- [ ] `docker-compose.yml` brings up api + web + PostgreSQL locally with one command
-- [ ] `Outage` entity + initial EF Core migration; schema applies to a fresh Postgres
-- [ ] `GET /api/outages?judet=Timiș` returns seeded outage(s) as JSON
-- [ ] Next.js page fetches the endpoint and lists Timiș outages (provider, localitate, time window, source link)
-- [ ] xUnit integration test (Testcontainers Postgres) asserts the endpoint returns a seeded outage
-- [ ] After implementation, create a commit with a descriptive message (e.g. "Walking skeleton: Outage → API → web")
+- [x] .NET solution (ASP.NET Core API) and Next.js + TS app scaffolded; all dependencies installed and building (NuGet restore + npm install)
+- [x] `docker-compose.yml` brings up api + web + PostgreSQL locally with one command
+- [x] `Outage` entity + initial EF Core migration; schema applies to a fresh Postgres
+- [x] `GET /api/outages?judet=Timiș` returns seeded outage(s) as JSON
+- [x] Next.js page fetches the endpoint and lists Timiș outages (provider, localitate, time window, source link)
+- [x] xUnit integration test (Testcontainers Postgres) asserts the endpoint returns a seeded outage
+- [x] After implementation, create a commit with a descriptive message (e.g. "Walking skeleton: Outage → API → web")
 
 ## Blocked by
 None - can start immediately

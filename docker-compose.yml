@@ -24,6 +24,8 @@ services:
       ConnectionStrings__Default: "Host=db;Port=5432;Database=deranjamente;Username=deranjamente;Password=deranjamente"
       # Apply EF migrations + seed on boot for the local demo only (prod uses a migration bundle).
       APPLY_MIGRATIONS: "true"
+      # Run the Hangfire scheduler (sample crawler) in the local stack.
+      ENABLE_SCHEDULER: "true"
       ASPNETCORE_ENVIRONMENT: Development
     ports:
       - "5123:8080"

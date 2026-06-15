@@ -1,13 +1,17 @@
+using Deranjamente.Api.Crawling;
 using Deranjamente.Api.Data;
 using Deranjamente.Api.Domain;
+using Deranjamente.Api.Infrastructure;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+var connectionString = builder.Configuration.GetConnectionString("Default");
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 // Serialize enums as their string names (e.g. "Curent", "Scraped") in JSON.
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -17,6 +21,25 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 const string WebCors = "web";
 builder.Services.AddCors(options => options.AddPolicy(WebCors, p =>
     p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+// Crawl pipeline spine.
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<CrawlPipeline>();
+builder.Services.AddScoped<CrawlJob>();
+builder.Services.AddScoped<ICrawler, SampleCrawler>();
+
+// Hangfire scheduling (Postgres-backed). Disabled in tests via ENABLE_SCHEDULER=false so the
+// sample crawler doesn't run against the test host.
+var schedulerEnabled = builder.Configuration.GetValue("ENABLE_SCHEDULER", true);
+if (schedulerEnabled)
+{
+    builder.Services.AddHangfire(cfg => cfg
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(connectionString)));
+    builder.Services.AddHangfireServer();
+}
 
 var app = builder.Build();
 
@@ -34,7 +57,32 @@ if (app.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
-    await SeedData.EnsureSeededAsync(db);
+    await SeedData.EnsureOutageSeededAsync(db);
+}
+
+// Crawler registry config is seeded whenever the scheduler runs or migrations were applied.
+if (schedulerEnabled || app.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await SeedData.EnsureCrawlerSourcesSeededAsync(db);
+}
+
+if (schedulerEnabled)
+{
+    var dashboardUser = app.Configuration["Hangfire:Username"];
+    var dashboardPassword = app.Configuration["Hangfire:Password"];
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = [new BasicAuthDashboardFilter(dashboardUser, dashboardPassword)],
+    });
+
+    await CrawlScheduler.RegisterAsync(app.Services);
+
+    // Kick one immediate run so the stack is demoable without waiting for the cadence.
+    using var scope = app.Services.CreateScope();
+    var jobs = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
+    jobs.Enqueue<CrawlJob>(job => job.RunAsync("sample"));
 }
 
 app.MapGet("/api/outages", async (string? judet, AppDbContext db) =>
